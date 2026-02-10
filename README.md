@@ -42,7 +42,8 @@
 ### 3. 后端启动
 1.  使用 IDEA 打开 `management` 目录。
 2.  修改 `src/main/resources/application.yml` 中的数据库用户名和密码。
-3.  运行 `ManagementApplication.java`。
+3.  在mysql中运行`management/sql` 中的表生成代码
+4.  运行 `ManagementApplication.java`。
 
 ### 4. 前端启动
 1.  终端进入 `lab-system` 目录。
@@ -58,6 +59,7 @@
 | :--- | :--- | :--- | :--- |
 | **管理员** | Anno | 20100908 | 全权限：审批申请、人员管理、入库管理、数据看板 |
 | **学生** | Tomori | 20101122 | 基础权限：实验室预约、耗材申领、查看个人进度 |
+在sys_user表中查看详情
 
 ---
 

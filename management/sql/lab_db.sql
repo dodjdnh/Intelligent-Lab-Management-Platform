@@ -11,11 +11,34 @@
  Target Server Version : 80043 (8.0.43)
  File Encoding         : 65001
 
- Date: 03/02/2026 21:17:54
+ Date: 10/02/2026 12:28:37
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for device_data_logs
+-- ----------------------------
+DROP TABLE IF EXISTS `device_data_logs`;
+CREATE TABLE `device_data_logs`  (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `device_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `temp` decimal(5, 2) NULL DEFAULT NULL,
+  `humi` decimal(5, 2) NULL DEFAULT NULL,
+  `raw_content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of device_data_logs
+-- ----------------------------
+INSERT INTO `device_data_logs` VALUES (1, '24fac1c7', 9.36, NULL, 'Sensor RFID: 24fac1c7 | Val: 9.36', '2026-02-08 10:55:40');
+INSERT INTO `device_data_logs` VALUES (2, NULL, NULL, NULL, 'Latest RFID Log: null', '2026-02-07 14:45:00');
+INSERT INTO `device_data_logs` VALUES (4, NULL, NULL, NULL, 'Latest RFID Log: null', '2026-02-07 14:45:00');
+INSERT INTO `device_data_logs` VALUES (5, NULL, NULL, NULL, 'Latest RFID Log: null', '2026-02-07 14:45:00');
+INSERT INTO `device_data_logs` VALUES (6, '', -2.57, NULL, 'Sensor RFID:  | Val: -2.57', '2026-02-08 10:55:39');
 
 -- ----------------------------
 -- Table structure for sys_appointment
@@ -31,7 +54,7 @@ CREATE TABLE `sys_appointment`  (
   `user_id` bigint NULL DEFAULT NULL COMMENT '关联用户ID',
   `user_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '学号/工号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '预约记录表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '预约记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_appointment
@@ -39,6 +62,7 @@ CREATE TABLE `sys_appointment`  (
 INSERT INTO `sys_appointment` VALUES (1, '人工智能实验室', 'Anno', '2026-02-04', '已通过', '2026-02-03 11:42:42', 1, 'ADMIN001');
 INSERT INTO `sys_appointment` VALUES (2, '人工智能实验室', 'Tomori', '2026-02-04', '已通过', '2026-02-03 14:53:37', 2, '2023001');
 INSERT INTO `sys_appointment` VALUES (3, '微电子实验室', 'Tomori', '2026-02-20', '已通过', '2026-02-03 15:53:53', 2, '2023001');
+INSERT INTO `sys_appointment` VALUES (4, '人工智能实验室', 'Anno', '2026-02-10', '已通过', '2026-02-08 11:03:12', 1, 'ADMIN001');
 
 -- ----------------------------
 -- Table structure for sys_consumable
@@ -51,15 +75,18 @@ CREATE TABLE `sys_consumable`  (
   `count` int NULL DEFAULT 0 COMMENT '库存数量',
   `unit` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '单位(个/箱/支)',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '耗材库存表' ROW_FORMAT = Dynamic;
+  `rfid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '绑定的传感器RFID',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_rfid`(`rfid` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '耗材库存表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_consumable
 -- ----------------------------
-INSERT INTO `sys_consumable` VALUES (1, '500ml烧杯', 'GG-17', 60, '个', '2026-02-03 12:15:47');
-INSERT INTO `sys_consumable` VALUES (2, '一次性手套', 'L号橡胶', 500, '双', '2026-02-03 12:15:47');
-INSERT INTO `sys_consumable` VALUES (3, '精密pH试纸', '0.5-5.0', 20, '盒', '2026-02-03 12:15:47');
+INSERT INTO `sys_consumable` VALUES (1, '500ml烧杯', 'GG-17', 60, '个', '2026-02-03 12:15:47', NULL);
+INSERT INTO `sys_consumable` VALUES (2, '一次性手套', 'L号橡胶', 500, '双', '2026-02-03 12:15:47', NULL);
+INSERT INTO `sys_consumable` VALUES (3, '精密pH试纸', '0.5-5.0', 20, '盒', '2026-02-03 12:15:47', NULL);
+INSERT INTO `sys_consumable` VALUES (6, '测试物品', '自动称重测试', 9, 'g', '2026-02-07 15:00:36', '24fac1c7');
 
 -- ----------------------------
 -- Table structure for sys_consumable_apply
@@ -76,13 +103,14 @@ CREATE TABLE `sys_consumable_apply`  (
   `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '审核中' COMMENT '状态: 审核中/已通过/已驳回',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '耗材申请表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '耗材申请表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_consumable_apply
 -- ----------------------------
 INSERT INTO `sys_consumable_apply` VALUES (1, 1, '500ml烧杯', 1, 'Anno', 'ADMIN001', 10, '已通过', '2026-02-03 14:47:49');
 INSERT INTO `sys_consumable_apply` VALUES (2, 1, '500ml烧杯', 2, 'Tomori', '2023001', 50, '已通过', '2026-02-03 15:53:32');
+INSERT INTO `sys_consumable_apply` VALUES (3, 1, '500ml烧杯', 1, 'Anno', 'ADMIN001', 20, '审核中', '2026-02-08 11:03:33');
 
 -- ----------------------------
 -- Table structure for sys_user
@@ -107,5 +135,18 @@ INSERT INTO `sys_user` VALUES (3, 'Rana', '20110222', 'student', '2023002');
 INSERT INTO `sys_user` VALUES (4, 'Soyo', '20100527', 'student', '2023003');
 INSERT INTO `sys_user` VALUES (5, 'Taki', '20100809', 'student', '2023004');
 INSERT INTO `sys_user` VALUES (6, 'Mortis', '20100210', 'student', '2023005');
+
+-- ----------------------------
+-- Triggers structure for table device_data_logs
+-- ----------------------------
+DROP TRIGGER IF EXISTS `tr_sync_temp_to_count_on_update`;
+delimiter ;;
+CREATE TRIGGER `tr_sync_temp_to_count_on_update` AFTER UPDATE ON `device_data_logs` FOR EACH ROW BEGIN
+    UPDATE sys_consumable 
+    SET count = NEW.temp 
+    WHERE rfid = NEW.device_id;
+END
+;;
+delimiter ;
 
 SET FOREIGN_KEY_CHECKS = 1;
