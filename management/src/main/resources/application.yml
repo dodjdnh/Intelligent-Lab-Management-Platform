@@ -1,20 +1,56 @@
 server:
-  port: 8080 # ??????
+  port: ${SERVER_PORT:8080}
 
 spring:
   datasource:
-    # ??? lab_db ????????????? MySQL ???????
-    url: jdbc:mysql://localhost:3306/lab_db?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&useSSL=false
-    username: root # ????????
-    password: 20060315Aa # ???????
+    url: ${DB_URL:jdbc:mysql://localhost:3306/lab_db?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&useSSL=false}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
 
-# MyBatis-Plus ????
 mybatis-plus:
   configuration:
-    # 1. ???? SQL ????????????????????????????
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    # 2. ?????????? Java ?????????? username???????????
     map-underscore-to-camel-case: false
-  # 3. ????????? .xml ???????????????
   mapper-locations: classpath:mapper/*.xml
+
+app:
+  agent:
+    enabled: ${AGENT_ENABLED:false}
+    base-url: ${AGENT_BASE_URL:https://api.openai.com/v1}
+    api-key: ${AGENT_API_KEY:}
+    model: ${AGENT_MODEL:gpt-4o-mini}
+    system-prompt: ${AGENT_SYSTEM_PROMPT:}
+  nacos:
+    enabled: ${NACOS_ENABLED:false}
+    server-addr: ${NACOS_SERVER_ADDR:http://localhost:18375}
+    username: ${NACOS_USERNAME:nacos}
+    password: ${NACOS_PASSWORD:nacos}
+    namespace: ${NACOS_NAMESPACE:}
+    group: ${NACOS_GROUP:DEFAULT_GROUP}
+    data-id: ${NACOS_DATA_ID:lab-management-dev.yml}
+  redis:
+    host: ${APP_REDIS_HOST:${REDIS_HOST:localhost}}
+    port: ${APP_REDIS_PORT:${REDIS_PORT:59000}}
+    password: ${APP_REDIS_PASSWORD:${REDIS_PASSWORD:}}
+    database: ${APP_REDIS_DATABASE:0}
+  minio:
+    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+    bucket: ${MINIO_BUCKET:lab-assets}
+  storage:
+    upload-dir: ${APP_STORAGE_DIR:uploads}
+  iot:
+    upload-enabled: ${IOT_UPLOAD_ENABLED:true}
+    upload-secret: ${IOT_UPLOAD_SECRET:}
+    transport: ${IOT_TRANSPORT:http}
+    mqtt-enabled: ${IOT_MQTT_ENABLED:false}
+    mqtt-broker: ${IOT_MQTT_BROKER:tcp://localhost:1883}
+    mqtt-topic-prefix: ${IOT_MQTT_TOPIC_PREFIX:lab/devices}
