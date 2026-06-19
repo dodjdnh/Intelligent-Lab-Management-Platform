@@ -27,6 +27,26 @@
             <el-icon><Sell /></el-icon> <span>耗材管理</span>
           </el-menu-item>
 
+          <el-menu-item index="/assistant">
+            <el-icon><ChatDotRound /></el-icon>
+            <span>智能助手</span>
+          </el-menu-item>
+
+          <el-menu-item index="/files">
+            <el-icon><FolderOpened /></el-icon>
+            <span>文件中心</span>
+          </el-menu-item>
+
+          <el-menu-item v-if="userRole === 'admin'" index="/devices">
+            <el-icon><Cpu /></el-icon>
+            <span>设备中心</span>
+          </el-menu-item>
+
+          <el-menu-item v-if="userRole === 'admin'" index="/alerts">
+            <el-icon><Bell /></el-icon>
+            <span>告警中心</span>
+          </el-menu-item>
+
           <el-menu-item v-if="userRole === 'admin'" index="/users">
             <el-icon><User /></el-icon>
             <span>人员管理</span>
@@ -70,7 +90,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 // 修改点 2: 引入需要的图标，防止图标不显示
 import { 
-  Platform, HomeFilled, Calendar, User, Sell, VideoCamera, UserFilled, Box
+  Platform, HomeFilled, Calendar, User, Sell, VideoCamera, UserFilled, ChatDotRound, FolderOpened, Cpu, Bell
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
