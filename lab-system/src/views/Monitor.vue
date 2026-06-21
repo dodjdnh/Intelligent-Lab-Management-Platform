@@ -55,32 +55,55 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-// 引入图片 (Vite 会自动处理这个路径)
+import { ElMessage } from 'element-plus'
+import request from '../utils/request'
 import alertImg from '../assets/alert_snapshot.png'
 
 const currentTime = ref(new Date().toLocaleString())
 let timer = null
+let eventSource = null
+const streamBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
-// 定义监控数据
-// id: 编号, isAlert: 是否报警, area: 区域名称, imgSrc: 图片路径
-const monitors = ref([
-  { id: 1, isAlert: false, area: '东区' },
-  { id: 2, isAlert: true,  area: '西区', imgSrc: alertImg }, // 这里设置为 true，并传入图片
-  { id: 3, isAlert: false, area: '南区' },
-  { id: 4, isAlert: false, area: '北区' }
-])
+const monitors = ref([])
 
 // 计算属性：判断当前是否有任意一个监控在报警
 const hasAlert = computed(() => monitors.value.some(m => m.isAlert))
 
+const fetchMonitor = async () => {
+  try {
+    const res = await request.get('/device/monitor')
+    if (res.code === 200) {
+      monitors.value = (res.data.devices || []).map((item, index) => ({
+        id: index + 1,
+        isAlert: item.lastValue !== null && Number(item.lastValue) < 10,
+        area: item.area,
+        imgSrc: alertImg,
+        deviceId: item.deviceId,
+        status: item.status
+      }))
+    }
+  } catch (error) {
+    ElMessage.error(error?.response?.data?.msg || '获取监控数据失败')
+  }
+}
+
 onMounted(() => {
+  fetchMonitor()
   timer = setInterval(() => {
     currentTime.value = new Date().toLocaleString()
   }, 1000)
+
+  const token = localStorage.getItem('satoken')
+  if (token) {
+    eventSource = new EventSource(`${streamBaseUrl}/stream/events?satoken=${encodeURIComponent(token)}`)
+    eventSource.addEventListener('device.status.changed', fetchMonitor)
+    eventSource.addEventListener('alert.created', fetchMonitor)
+  }
 })
 
 onUnmounted(() => {
   clearInterval(timer)
+  eventSource?.close()
 })
 </script>
 

@@ -58,6 +58,33 @@
       </el-table>
     </el-card>
 
+    <el-card class="box-card" style="margin-top: 20px;">
+      <template #header>
+        <div class="card-header">
+          <span style="font-weight: bold;">📊 库存变更日志</span>
+          <el-button type="primary" text @click="fetchAll">刷新</el-button>
+        </div>
+      </template>
+
+      <el-table :data="changeLogs" border stripe max-height="320">
+        <el-table-column prop="createdAt" label="变更时间" width="180" />
+        <el-table-column prop="consumableName" label="耗材名称" min-width="140" />
+        <el-table-column prop="changeType" label="类型" width="150" />
+        <el-table-column prop="beforeCount" label="变更前" width="90" />
+        <el-table-column prop="afterCount" label="变更后" width="90" />
+        <el-table-column prop="deltaCount" label="差值" width="90">
+          <template #default="scope">
+            <span :style="{ color: scope.row.deltaCount >= 0 ? '#67c23a' : '#f56c6c', fontWeight: 'bold' }">
+              {{ scope.row.deltaCount >= 0 ? '+' : '' }}{{ scope.row.deltaCount }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="deviceId" label="设备ID" width="120" />
+        <el-table-column prop="operator" label="操作者" width="100" />
+        <el-table-column prop="remark" label="备注" min-width="220" show-overflow-tooltip />
+      </el-table>
+    </el-card>
+
     <el-dialog v-model="dialogVisible" title="耗材入库" width="400px">
       <el-form :model="form" label-width="80px">
         <el-form-item label="名称"> <el-input v-model="form.name" /> </el-form-item>
@@ -80,6 +107,7 @@ import request from '../utils/request'
 
 const stockList = ref([]) // 库存列表
 const applyList = ref([]) // 申请记录
+const changeLogs = ref([]) // 库存变更
 const dialogVisible = ref(false)
 const form = ref({ name: '', specification: '', count: 10, unit: '' })
 
@@ -88,13 +116,18 @@ const isAdmin = computed(() => localStorage.getItem('role') === 'admin')
 
 // 获取两个列表数据
 const fetchAll = async () => {
-  // 1. 查库存
-  const res1 = await request.get('/consumable/list')
-  if (res1.code === 200) stockList.value = res1.data
-  
-  // 2. 查申请记录
-  const res2 = await request.get('/consumable/apply-list')
-  if (res2.code === 200) applyList.value = res2.data
+  try {
+    const [res1, res2, res3] = await Promise.all([
+      request.get('/consumable/list'),
+      request.get('/consumable/apply-list'),
+      request.get('/consumable/change-log')
+    ])
+    if (res1.code === 200) stockList.value = res1.data
+    if (res2.code === 200) applyList.value = res2.data
+    if (res3.code === 200) changeLogs.value = res3.data
+  } catch (error) {
+    ElMessage.error(error?.response?.data?.msg || '获取耗材数据失败')
+  }
 }
 
 // 提交申请 (弹窗询问数量)
@@ -120,22 +153,33 @@ const openApply = (row) => {
 
 // 管理员审核
 const handleAudit = async (id, status) => {
-  const res = await request.post('/consumable/audit', { id, status })
-  if (res.code === 200) {
-    ElMessage.success('审核完成')
-    fetchAll() // 刷新库存和记录
-  } else {
-    ElMessage.error(res.msg)
+  try {
+    const res = await request.post('/consumable/audit', { id, status })
+    if (res.code === 200) {
+      ElMessage.success('审核完成')
+      fetchAll()
+    } else {
+      ElMessage.error(res.msg)
+    }
+  } catch (error) {
+    ElMessage.error(error?.response?.data?.msg || '审核失败')
   }
 }
 
 // 入库
 const handleAdd = async () => {
-  const res = await request.post('/consumable/add', form.value)
-  if (res.code === 200) {
-    ElMessage.success('入库成功')
-    dialogVisible.value = false
-    fetchAll()
+  try {
+    const res = await request.post('/consumable/add', form.value)
+    if (res.code === 200) {
+      ElMessage.success(res.msg || '入库成功')
+      dialogVisible.value = false
+      form.value = { name: '', specification: '', count: 10, unit: '' }
+      fetchAll()
+    } else {
+      ElMessage.error(res.msg)
+    }
+  } catch (error) {
+    ElMessage.error(error?.response?.data?.msg || '入库失败')
   }
 }
 

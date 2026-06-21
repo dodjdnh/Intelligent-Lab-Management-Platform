@@ -44,17 +44,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import request from '../utils/request'
 
 // 获取当前角色
 const isAdmin = localStorage.getItem('role') === 'admin'
+const streamBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 const stats = ref({
   todayReserve: 0,
   consumableWarning: 0,
   pendingTask: 0
 })
+
+let eventSource = null
 
 const fetchStats = async () => {
   try {
@@ -69,6 +72,16 @@ const fetchStats = async () => {
 
 onMounted(() => {
   fetchStats()
+  const token = localStorage.getItem('satoken')
+  if (token) {
+    eventSource = new EventSource(`${streamBaseUrl}/stream/events?satoken=${encodeURIComponent(token)}`)
+    eventSource.addEventListener('inventory.changed', fetchStats)
+    eventSource.addEventListener('appointment.audited', fetchStats)
+  }
+})
+
+onUnmounted(() => {
+  eventSource?.close()
 })
 </script>
 

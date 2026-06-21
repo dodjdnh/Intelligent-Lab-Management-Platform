@@ -112,7 +112,7 @@ const fetchList = async () => {
       }))
     }
   } catch (error) {
-    console.error('获取列表失败', error)
+    ElMessage.error(error?.response?.data?.msg || '获取预约列表失败')
   }
 }
 
@@ -130,7 +130,7 @@ const handleAudit = async (id, status) => {
       ElMessage.error(res.msg)
     }
   } catch (error) {
-    ElMessage.error('操作失败')
+    ElMessage.error(error?.response?.data?.msg || '操作失败')
   }
 }
 
@@ -150,7 +150,7 @@ const handleConfirm = async () => {
         ElMessage.error(res.msg)
       }
     } catch (error) {
-      ElMessage.error('提交异常')
+      ElMessage.error(error?.response?.data?.msg || '提交异常')
     }
   } else {
     ElMessage.error('请填写完整信息')

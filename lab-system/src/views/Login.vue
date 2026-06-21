@@ -7,7 +7,7 @@
           <el-input 
             v-model="loginForm.username" 
             placeholder="用户名" 
-            prefix-icon="User" 
+            :prefix-icon="User" 
           />
         </el-form-item>
         <el-form-item>
@@ -15,7 +15,7 @@
             v-model="loginForm.password" 
             type="password" 
             placeholder="密码" 
-            prefix-icon="Lock" 
+            :prefix-icon="Lock" 
             show-password 
           />
         </el-form-item>
@@ -35,19 +35,25 @@ const router = useRouter()
 const loginForm = ref({ username: '', password: '' })
 
 const handleLogin = async () => {
+  if (!loginForm.value.username?.trim() || !loginForm.value.password?.trim()) {
+    ElMessage.error('请输入用户名和密码')
+    return
+  }
+
   try {
     const res = await request.post('/auth/login', loginForm.value)
     if (res.code === 200) {
       localStorage.setItem('satoken', res.data.token)
       localStorage.setItem('role', res.data.role)
-      localStorage.setItem('userName', loginForm.value.username)
+      localStorage.setItem('userName', res.data.userName || loginForm.value.username)
+      localStorage.setItem('userNo', res.data.userNo || '')
       ElMessage.success('登录成功')
       router.push('/')
     } else {
       ElMessage.error(res.msg)
     }
   } catch (error) {
-    ElMessage.error('登录异常，请检查后端服务')
+    ElMessage.error(error?.response?.data?.msg || '登录异常，请检查后端服务')
   }
 }
 </script>
