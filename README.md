@@ -1,101 +1,102 @@
-# 🧪 智慧实验室管理系统 (Smart Lab Management System)
+<div align="center">
+  <h1>🧪 智慧实验室管理系统</h1>
+  <p><strong>Smart Lab Management System</strong></p>
+  <p>IoT 感知 · 库存同步 · 预约审批 · Vue 3 可视化</p>
+  <p>
+    <img src="https://img.shields.io/badge/Backend-Spring%20Boot-6DB33F?style=flat-square&logo=springboot&logoColor=white" alt="Spring Boot" />
+    <img src="https://img.shields.io/badge/Frontend-Vue%203-42B883?style=flat-square&logo=vuedotjs&logoColor=white" alt="Vue 3" />
+    <img src="https://img.shields.io/badge/Database-MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white" alt="MySQL" />
+    <img src="https://img.shields.io/badge/IoT-RFID%20%2B%20HX711-8B5CF6?style=flat-square" alt="IoT" />
+  </p>
+</div>
 
-> **IoT 赋能的各种耗材与实验室全生命周期管理平台**
+> 面向高校实验室的数字化管理平台。系统把预约、审批、耗材库存和硬件上报串成一条可追溯的业务链，解决物资流转不透明和库存数据滞后的问题。
 
-本项目是一款为高校实验室量身定制的数字化管理平台。它不仅包含传统的预约与审批流程，更通过 **物联网（IoT）技术** 打通了物理世界与数字世界，实现了基于 **RFID 与重力感应** 的耗材库存实时自动同步，解决了传统实验室管理中“账实不符”、物资流转不透明及信息滞后等核心痛点。
+## 项目亮点
 
----
+| 能力 | 说明 |
+| --- | --- |
+| IoT 库存同步 | RFID 识别耗材身份，HX711 采集重量，后端实时更新库存 |
+| 业务闭环 | 学生申请 → 管理员审核 → 库存扣减 / 时段占用 |
+| 权限控制 | Sa-Token 区分管理员与学生角色，并为硬件上报提供白名单 |
+| 可视化工作台 | Vue 3 + Element Plus 展示预约、库存和设备数据 |
+| 公网联调 | 可通过 Ngrok 把本地服务暴露给远程硬件设备 |
 
-## 🌟 项目亮点
+## 数据链路
 
-* **⚡️ IoT 智能感知与同步：**
-    * **无感入库/盘点：** 集成重力传感器与 RFID 技术，物品放上货架即可自动识别身份并同步重量数据至数据库，实时更新库存。
-    * **公网穿透通信：** 采用 **Ngrok** 隧道技术，实现本地开发环境与远程硬件设备的无缝 HTTP 通信。
-* **🔄 全流程闭环业务：** 实现了从“学生申请 -> 管理员审核 -> 自动扣减库存/占用时段”的完整业务流。
-* **🛡 细粒度权限控制：** 基于 **Sa-Token** 实现轻量级登录鉴权，支持管理员与学生角色权限分离，通过白名单机制保障硬件数据上报的安全与便捷。
-* **📊 可视化体验优化：** 前端采用 **Vue3 + Element-Plus**，支持首页数据看板，将抽象的传感器数据转化为可视化的实时库存动态。
+~~~mermaid
+flowchart LR
+    H[RFID / HX711] -->|HTTP JSON| N[Ngrok 隧道]
+    N --> A[Spring Boot API]
+    A --> L[设备日志]
+    A --> S[库存与业务数据]
+    S --> V[Vue 3 管理界面]
+~~~
 
----
+硬件上报示例：
 
-## 🛠️ 技术栈
+~~~json
+{"gravity": 120.54, "RFID": "24fac1c7"}
+~~~
 
-### ☁️ 后端 (Backend)
-* **核心框架：** Spring Boot 3.x
-* **数据库：** MySQL 8.0
-* **持久层：** MyBatis-Plus (简化 CRUD 操作)
-* **权限安全：** Sa-Token (Token 鉴权、RBAC 角色校验、API 白名单)
-* **工具库：** Lombok, Maven, Fastjson/Jackson
+后端根据 RFID 匹配耗材，并把原始数据记录到 device_data_logs，再更新 sys_consumable.count。
 
-### 💻 前端 (Frontend)
-* **框架：** Vue 3 (Composition API)
-* **UI 组件库：** Element-Plus
-* **网络请求：** Axios
-* **图标库：** @element-plus/icons-vue
+## 技术栈
 
-### 🤖 硬件与物联网 (IoT & Hardware)
-* **感知层：** Arduino / ESP32 开发板
-* **传感器：** HX711 重力传感器 (库存量化)、RC522 RFID 读写模块 (身份识别)
-* **通信协议：** HTTP POST (JSON Payload)
-* **内网穿透：** Ngrok (构建公网数据隧道)
+| 层次 | 技术 |
+| --- | --- |
+| 后端 | Spring Boot 3、MyBatis-Plus、MySQL 8、Sa-Token |
+| 前端 | Vue 3、Element Plus、Axios、ECharts 规划中 |
+| 硬件 | Arduino / ESP32、HX711、RC522 |
+| 通信 | HTTP POST、JSON、Ngrok |
 
----
+## 快速开始
 
-## 📡 IoT 架构与实现原理
+### 1. 初始化数据库
 
-本项目实现了物理层到应用层的端到端数据流转：
+创建 lab_db 数据库，并执行：
 
-1.  **物理感知层**：
-    * 硬件终端读取 RFID 标签（如 `24fac1c7`）获取物品唯一身份。
-    * 实时采集重力数值（如 `120.54g`）作为剩余库存量。
-2.  **数据传输层**：
-    * 硬件将数据封装为标准 JSON：`{"gravity": 120.54, "RFID": "24fac1c7"}`。
-    * 通过 Ngrok 隧道将数据发送至后端接口 `/api/hardware/upload`。
-3.  **业务逻辑层**：
-    * **日志记录**：所有原始数据存入 `device_data_logs` 表，支持历史溯源。
-    * **策略更新**：后端根据 RFID 自动匹配 `sys_consumable` 表中的耗材，并实时更新其 `count` (库存) 字段。
+~~~text
+management/sql/lab_db.sql
+~~~
 
----
+### 2. 启动后端
 
-## 🚀 快速开始
+1. 使用 IDEA 打开 management 目录。
+2. 修改 management/src/main/resources/application.yml 中的数据库账号和密码。
+3. 运行 ManagementApplication.java。
+4. 如需联调硬件，可执行 ngrok http 8080。
 
-### 1. 环境准备
-* JDK 17+
-* Node.js 16+
-* MySQL 8.0+
-* Ngrok (用于联调硬件)
+### 3. 启动前端
 
-### 2. 数据库初始化
-1.  创建一个名为 `lab_db` 的数据库。
-2.  运行项目根目录下 `management/sql/lab_db.sql` 文件，完成表结构及初始数据导入。
+~~~powershell
+cd lab-system
+npm install
+npm run dev
+~~~
 
-### 3. 后端启动
-1.  使用 IDEA 打开 `management` 目录。
-2.  修改 `src/main/resources/application.yml` 中的数据库用户名和密码。
-3.  运行 `ManagementApplication.java`。
-4.  *(可选)* 启动 Ngrok：`ngrok http 8080`，获取公网地址用于硬件配置。
+## 演示账号
 
-### 4. 前端启动
-1.  终端进入 `lab-system` 目录。
-2.  安装依赖：`npm install`
-3.  启动开发服务器：`npm run dev`
-4.  访问浏览器
+<details>
+<summary>展开查看本地演示账号</summary>
 
----
+| 角色 | 用户名 | 密码 | 主要权限 |
+| --- | --- | --- | --- |
+| 管理员 | Anno | 20100908 | 审批、人员管理、设备绑定、库存监控 |
+| 学生 | Tomori | 20101122 | 实验室预约、耗材申领、查看进度 |
 
-## 🔐 测试账号
+这些账号仅用于本地演示，生产环境必须替换并关闭默认凭据。
+</details>
 
-| 角色 | 用户名 | 密码 | 权限内容 |
-| :--- | :--- | :--- | :--- |
-| **管理员** | Anno | 20100908 | 全权限：审批申请、人员管理、**IoT 设备绑定**、库存自动同步监控 |
-| **学生** | Tomori | 20101122 | 基础权限：实验室预约、耗材申领、查看个人进度 |
+## 资料入口
 
-*(更多用户请在 `sys_user` 表中查看)*
+- [功能介绍](./功能介绍.md)
+- [后端工程](./management/)
+- [前端工程](./lab-system/)
 
----
+## 后续方向
 
-## 📅 未来路线 (Roadmap)
-
-- [x] **IoT 基础模块：** 完成 RFID 与重力数据的上报与库存联动。
-- [ ] **数据可视化大屏：** 基于 ECharts 构建实验室环境与库存的 3D 可视化大屏。
-- [ ] **AI 智能助手：** 接入 DeepSeek 大模型，通过自然语言查询“现在还有多少烧杯？”或“预约下周三实验室”。
-- [ ] **异常告警：** 当传感器数值骤降（如试剂泄漏或被盗）时，自动通过邮件/短信通知管理员。
+- [x] RFID 与重力数据上报及库存联动
+- [ ] 基于 ECharts 的实验室环境与库存大屏
+- [ ] AI 自然语言查询助手
+- [ ] 传感器异常告警
