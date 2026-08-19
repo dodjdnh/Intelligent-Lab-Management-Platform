@@ -7,6 +7,8 @@
     <img src="https://img.shields.io/badge/Frontend-Vue%203-42B883?style=flat-square&logo=vuedotjs&logoColor=white" alt="Vue 3" />
     <img src="https://img.shields.io/badge/Database-MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white" alt="MySQL" />
     <img src="https://img.shields.io/badge/IoT-RFID%20%2B%20HX711-8B5CF6?style=flat-square" alt="IoT" />
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License" />
+    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square" alt="PRs Welcome" />
   </p>
 </div>
 
